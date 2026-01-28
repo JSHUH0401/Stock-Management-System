@@ -173,14 +173,12 @@ with tab_order:
         .stApp h1 {
             font-size: 28px !important;
             font-weight: 700 !important;
-            color: #1F2937 !important;
-            padding-top: 0px !important;
+\            padding-top: 0px !important;
             padding-bottom: 15px !important;
         }
         /* 상단 탭 메뉴(실시간 대시보드, 발주 관리 등)의 글자 크기 조절 */
         .stTabs [data-baseweb="tab"] p {
             font-size: 18px !important;  /* 기존보다 크게 20px로 설정 */
-            color: #1F2937 !important;   /* 진한 색상으로 가독성 향상 */
         }
         /* Primary 버튼 색상을 강렬한 빨간색에서 차분한 네이비 블루로 변경 */
         div.stButton > button[kind="primary"] {
