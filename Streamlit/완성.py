@@ -48,13 +48,13 @@ def get_unified_data():
 
 # --- [4. 상단 메뉴 구성 (Tabs)] ---
 st.set_page_config(page_title="만월경 통합 관리", layout="wide")
-tab_dash, tab_order, tab_check, tab_admin = st.tabs(["📊 실시간 대시보드", "🛒 발주 관리", "📝 재고 실사", "🔐 마스터 관리창"])
+tab_dash, tab_order, tab_check, tab_admin = st.tabs(["실시간 대시보드", "발주 관리", "재고 실사", "마스터 관리창"])
 
 # -------------------------------------------------------------------------------------------
 # 메뉴 1: 실시간 대시보드 & 입고 (대시보드.py 기반)
 # -------------------------------------------------------------------------------------------
 with tab_dash:
-    st.title("🚨 실시간 재고 모니터링")
+    st.title("실시간 재고 모니터링")
     df = get_unified_data()
     now_kst = datetime.now(KST)
     
@@ -77,7 +77,7 @@ with tab_dash:
         st.dataframe(danger[['category', 'item_name', '예측재고', 'safety_stock', 'base_unit']], use_container_width=True, hide_index=True)
 
     st.divider()
-    st.subheader("🚚 배송 중인 주문 및 입고 처리")
+    st.subheader("배송 중인 주문 및 입고 처리")
     # 배송 현황 로드
     res_o = supabase.table("PURCHASE_ORDERS").select("*, SUPPLIERS(name)").eq("status", "배송중").execute()
     orders = pd.DataFrame(res_o.data)
@@ -88,7 +88,7 @@ with tab_dash:
             oid = order['order_id']
             col_info, col_btn = st.columns([5, 1])
             with col_info:
-                exp = st.expander(f"📦 주문 #{oid} | {order['SUPPLIERS']['name']} (결제액: {order['total_price']:,}원)")
+                exp = st.expander(f"📦 주문 {order['SUPPLIERS']['name']} (결제액: {order['total_price']:,}원)")
             with col_btn:
                 st.write("<div style='height: 5px;'></div>", unsafe_allow_html=True)
                 if st.button("입고완료", key=f"rec_{oid}", use_container_width=True):
@@ -253,46 +253,58 @@ with tab_order:
                 active_sups = sorted(list(set(k[1] for k in display_items.keys())))
                 # [삭제] 기존의 total_price = 0 줄은 지워주세요.
 
-                for sup in active_sups:
+                for sup in active_sups:         
                     with st.expander(f"🏢 공급처: {sup}", expanded=True):
                         sup_items = {k: v for k, v in display_items.items() if k[1] == sup}
                         for (name, s), qty in sup_items.items():
-                            item_data = next(i for i in st.session_state.item_master if i["name"] == name)
                             
-                            # [수정] 현재 공급처에 해당하는 상세 정보와 재고 정보 추출
+                            # --- [추가] 삭제된 항목은 행 자체를 그리지 않음 ---
+                            if 'deleted_keys' in st.session_state and (name, sup) in st.session_state.deleted_keys:
+                                continue
+                            # -----------------------------------------------
+
+                            item_data = next(i for i in st.session_state.item_master if i["name"] == name)
                             detail = next(sd for sd in item_data["SUPPLIER_DETAILS"] if sd["SUPPLIERS"]["name"] == sup)
                             stock_val = next((stk["stock"] for stk in item_data["STOCKS"] if stk["supplier_id"] == detail["supplier_id"]), 0)
                             MOQ = int(detail.get("MOQ", 1)) if str(detail.get("MOQ")).isdigit() else 1
 
-                            cols = st.columns([2.5, 1.2, 3.5, 2, 1.5]) 
-                            cols[0].write(f"**{name}**")
-                            cols[1].caption(f"재고:{stock_val}") # [수정] current_stock 대신 stock_val 사용
+                            cols = st.columns([0.5, 2.5, 1.2, 3.5, 2, 1.5]) 
                             
-                            btn_col = cols[2]
-                            bc1, bc2, bc3 = btn_col.columns([1, 1.2, 1])
-                            if bc1.button("－", key=f"min_{name}_{sup}", use_container_width=True):
-                                st.session_state.manual_cart[(name, s)] = max(0, qty - MOQ)
+                            if cols[0].button("⊖", key=f"del_{name}_{sup}"):
+                                # 1. 수동 추가 품목 삭제
+                                if (name, sup) in st.session_state.manual_cart:
+                                    del st.session_state.manual_cart[(name, sup)]
+                                
+                                # 2. 추천 품목은 숨김 리스트에 등록 (행 제거용)
+                                if 'deleted_keys' not in st.session_state:
+                                    st.session_state.deleted_keys = set()
+                                st.session_state.deleted_keys.add((name, sup))
+                                
                                 st.rerun()
-                            bc2.markdown(f"<div style='text-align: center; font-size: 14px; margin-top: 5px;'>{qty}</div>", unsafe_allow_html=True)
-                            if bc3.button("＋", key=f"plu_{name}_{sup}", use_container_width=True):
-                                st.session_state.manual_cart[(name, s)] = qty + MOQ
-                                st.rerun()
-                            
-                            # [수정] 가격 정보를 가져오되, NULL(None)이면 0으로 처리하여 에러 방지
+
+                            # 이 아래 코드들이 실행되지 않아야 행이 남지 않습니다.
+                            cols[1].write(f"**{name}**")
+                            cols[2].caption(f"재고:{stock_val}")                            
+                            with cols[3]:
+                                new_qty = st.number_input(
+                                    label="수량", min_value=0, value=int(qty), step=int(MOQ),
+                                    key=f"input_{name}_{sup}", label_visibility="collapsed"
+                                )
+                                if new_qty != qty:
+                                    st.session_state.manual_cart[(name, s)] = new_qty
+                                    st.rerun()
+
                             raw_price = detail.get("order_unit_price")
                             unit_price = int(raw_price) if raw_price is not None else 0
-
-                            # 가격 계산 (이제 NoneType 에러가 나지 않습니다)
                             price = qty * unit_price
                             total_price += price
 
-                            # UI 표시: 가격이 0원(NULL)인 경우 안내 메시지 출력
                             if unit_price > 0:
-                                cols[3].write(f"**{price:,}원**")
+                                cols[4].write(f"**{price:,}원**")
                             else:
-                                cols[3].error("단가없음")
+                                cols[4].error("단가없음")
 
-                            cols[4].link_button("🔗발주", detail.get("order_url", "#"), use_container_width=True)
+                            cols[5].link_button("🔗발주", detail.get("order_url", "#"), use_container_width=True)
 
             # --- 4. 최종 발주 승인 ---
             st.divider()
