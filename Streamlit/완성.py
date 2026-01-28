@@ -88,7 +88,26 @@ with tab_dash:
             oid = order['order_id']
             col_info, col_btn = st.columns([5, 1])
             with col_info:
-                exp = st.expander(f"📦 주문 {order['SUPPLIERS']['name']} (결제액: {order['total_price']:,}원)")
+                #texp = st.expander(f"📦 주문 {order['SUPPLIERS']['name']} (결제액: {order['total_price']:,}원)")
+                for _, order in orders.iterrows():
+                    oid = order['order_id']
+                    col_info, col_btn = st.columns([5, 1])
+                    with col_info:
+                        # 1. expander 선언
+                        exp = st.expander(f"📦 주문 {order['SUPPLIERS']['name']} (결제액: {order['total_price']:,}원)")
+                        
+                        # 2. [추가] expander 내부에 상세 품목 표시
+                        with exp:
+                            # 해당 주문에 속한 아이템들 가져오기
+                            items_res = supabase.table("PURCHASE_ITEMS").select("*, ITEMS(name)").eq("order_id", oid).execute()
+                            if items_res.data:
+                                for itm in items_res.data:
+                                    # 품목명과 수량 표시
+                                    item_name = itm['ITEMS']['name']
+                                    qty = itm['actual_qty']
+                                    st.write(f"- {item_name}: **{qty}** 개")
+                            else:
+                                st.write("상세 품목 정보가 없습니다.")
             with col_btn:
                 st.write("<div style='height: 5px;'></div>", unsafe_allow_html=True)
                 if st.button("입고완료", key=f"rec_{oid}", use_container_width=True):
@@ -150,6 +169,20 @@ with tab_order:
     # CSS: 버튼 색상 변경 및 정렬 미세조정
     st.markdown("""
         <style>
+        /* 1. 최상단 메인 제목 (st.title) 스타일 */
+        .stApp h1 {
+            font-size: 28px !important;
+            font-weight: 700 !important;
+            color: #1F2937 !important;
+            padding-top: 0px !important;
+            padding-bottom: 15px !important;
+        }
+        /* 상단 탭 메뉴(실시간 대시보드, 발주 관리 등)의 글자 크기 조절 */
+        .stTabs [data-baseweb="tab"] p {
+            font-size: 20px !important;  /* 기존보다 크게 20px로 설정 */
+            font-weight: 700 !important; /* 글자를 더 두껍게 */
+            color: #1F2937 !important;   /* 진한 색상으로 가독성 향상 */
+        }
         /* Primary 버튼 색상을 강렬한 빨간색에서 차분한 네이비 블루로 변경 */
         div.stButton > button[kind="primary"] {
             background-color: #2E4053; 
@@ -422,7 +455,7 @@ with tab_check:
         return merged_df
 
     # --- 앱 UI 구성 ---
-    st.title("📝 카테고리별 재고 실사 (예측 반영)")
+    st.title("재고 실사")
 
     df = get_stock_data_with_prediction()
     df['새로운 재고량'] = None
@@ -460,7 +493,7 @@ with tab_check:
         final_edited_df = pd.concat(updated_dfs)
 
     # 4. 재고 반영 및 학습 버튼 (로직 생략 - 기존과 동일)
-    if st.button("실사 반영 및 패턴 학습", type="primary"):
+    if st.button("실사 반영", type="primary"):
         updates = final_edited_df[final_edited_df['새로운 재고량'].notnull()]
         
         if not updates.empty:
@@ -531,10 +564,10 @@ with tab_check:
 # 메뉴 4: 마스터 관리창 (품목등록.py 기반)
 # -------------------------------------------------------------------------------------------
 with tab_admin:
-    adm_t1, adm_t2 = st.tabs(["🆕 신규 품목/공급처 등록", "🛠️ DB 테이블 직접 수정"])
+    adm_t1, adm_t2 = st.tabs(["신규 품목/공급처 등록", "DB 테이블 직접 수정"])
     
     with adm_t1:
-        st.subheader("1️⃣ 통합 등록 (URL 제외 모든 항목 필수)")
+        st.subheader("1️ 통합 등록 (URL 제외 모든 항목 필수)")
         with st.form("admin_reg_form"):
             c1, c2 = st.columns(2)
             with c1:
@@ -566,11 +599,11 @@ with tab_admin:
                     st.success(f"✅ '{itm_n}' 등록 완료!")
 
     with adm_t2:
-        st.subheader("🛠️ DB 테이블 직접 수정 (가불기)")
+        st.subheader("DB 테이블 직접 수정")
         target_tab = st.selectbox("수정할 테이블 선택", ["ITEMS", "STOCKS", "SUPPLIERS", "SUPPLIER_DETAILS", "PURCHASE_ORDERS", "PURCHASE_ITEMS"])
         db_res = supabase.table(target_tab).select("*").execute()
         # 직접 수정 및 Upsert 반영
         edited_db = st.data_editor(pd.DataFrame(db_res.data), num_rows="dynamic", use_container_width=True)
         if st.button(f"{target_tab} 데이터 반영"):
             supabase.table(target_tab).upsert(edited_db.to_dict(orient='records')).execute()
-            st.success("DB 반영 성공!")
+            st.success("DB 반영 성공")
