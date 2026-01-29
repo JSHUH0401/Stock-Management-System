@@ -520,7 +520,7 @@ with tab_check:
                                     return v.iloc[0] if hasattr(v, 'iloc') else v[0]
                                 return v
 
-                            current_stock = float(get_value(row, 'current_stock'))
+                            current_stock = float(get_value(row, 'stock'))
                             avg_cons = float(get_value(row, 'avg_consumption'))
                             item_id = int(get_value(row, 'item_id'))
                             supplier_id = int(get_value(row, 'supplier_id'))
