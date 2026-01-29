@@ -526,7 +526,17 @@ with tab_check:
                             supplier_id = int(get_value(row, 'supplier_id'))
 
                             # --- 이후 학습 및 DB 업데이트 로직은 동일 ---
-                            last_check_dt = pd.to_datetime(row['last_checked_at'])
+                            last_val = get_value(row, 'last_checked_at')
+                            last_check_dt = pd.to_datetime(last_val)
+
+                            # 2. 시간대(Timezone) 정보가 없으면 UTC를 입힌 후 한국 시간(KST)으로 변환
+                            if last_check_dt.tzinfo is None:
+                                last_check_dt = last_check_dt.replace(tzinfo=timezone.utc).astimezone(KST)
+                            else:
+                                # 이미 시간대 정보가 있다면 그대로 한국 시간으로 변환
+                                last_check_dt = last_check_dt.astimezone(KST)
+
+                            # 3. 이제 계산 (둘 다 KST 객체라 에러가 나지 않습니다)
                             weight_sum = get_total_weight(last_check_dt, now_kst)
                             usage_diff = current_stock - actual_qty
                             actual_daily_usage = usage_diff / max(weight_sum, 0.1)
