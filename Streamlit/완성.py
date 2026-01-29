@@ -526,7 +526,8 @@ with tab_check:
                             supplier_id = int(get_value(row, 'supplier_id'))
 
                             # --- 이후 학습 및 DB 업데이트 로직은 동일 ---
-                            weight_sum = get_total_weight(row['last_checked_at'], now_kst)
+                            last_check_dt = pd.to_datetime(row['last_checked_at'])
+                            weight_sum = get_total_weight(last_check_dt, now_kst)
                             usage_diff = current_stock - actual_qty
                             actual_daily_usage = usage_diff / max(weight_sum, 0.1)
                             
