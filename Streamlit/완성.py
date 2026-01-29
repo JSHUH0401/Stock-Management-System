@@ -19,7 +19,7 @@ def get_total_weight(start_date, end_date):
     """두 날짜 사이의 요일별 소모 가중치 합계 계산"""
     weekday_factors = {0: 0.8, 4: 1.2, 5: 1.5, 6: 1.3}
     total_weight = 0
-    current = start_date.astimezone(timezone.utc)
+    current = start_date.astimezone(timezone.utc) + timedelta(days = 1)
     now = end_date.astimezone(timezone.utc)
     while current <= now:
         factor = weekday_factors.get(current.weekday(), 1.0)
@@ -538,8 +538,7 @@ with tab_check:
                             supabase.table("STOCKS").update({
                                 "stock": actual_qty,
                                 "avg_consumption": float(new_avg),
-                                "last_checked_at": now_kst.isoformat()
-                            }).match({
+                                "last_checked_at": now_kst.strftime('%Y-%m-%dT%H:%M:%S+09:00')                            }).match({
                                 "item_id": item_id,
                                 "supplier_id": supplier_id
                             }).execute()
