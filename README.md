@@ -32,7 +32,7 @@ erDiagram
     SUPPLIERS ||--o{ SUPPLIER_DETAILS : ""
     ITEMS ||--o{ SUPPLIER_DETAILS : ""
     SUPPLIERS ||--o{STOCKS : ""
-    STOCKS ||..o{ STOCK_LOGS : "실사 이력 기록"
+    STOCKS ||..o{ STOCK_LOGS : ""
 
     %% [Domain 3: Transaction]
     PURCHASE_ORDERS ||--o{ PURCHASE_ITEMS : ""
