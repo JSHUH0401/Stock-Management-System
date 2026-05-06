@@ -29,8 +29,8 @@
 erDiagram
     %% [Domain 1: Master Data]
     ITEMS ||--o{ STOCKS : ""
-    SUPPLIERS ||--o{ SUPPLIER_DETAILS : ""
-    ITEMS ||--o{ SUPPLIER_DETAILS : ""
+    SUPPLIERS ||--o{ ITEM_DETAILS : ""
+    ITEMS ||--o{ ITEM_DETAILS : ""
     SUPPLIERS ||--o{STOCKS : ""
     STOCKS ||..o{ STOCK_LOGS : ""
 
@@ -50,7 +50,7 @@ erDiagram
         int min_order_price
     }
 
-    SUPPLIER_DETAILS {
+    ITEM_DETAILS {
         int supplier_id PK, FK
         int item_id PK, FK
         float conversion_factor
@@ -95,7 +95,7 @@ erDiagram
     }
 ```
 **주요 테이블 설명**
-- SUPPLIER_DETAILS
+- ITEM_DETAILS
    - 설계목적: 발주, 입고, 재고실사에 필요한 MOQ, 안전재고, 주문단위당 개수 등을 포함
    - 핵심필드
       - MOQ : 물류 비용 최적화를 위한 최소 주문 단위 제약
