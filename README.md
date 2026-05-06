@@ -28,14 +28,14 @@
 ```mermaid
 erDiagram
     %% [Domain 1: Master Data]
-    ITEMS ||--|{ STOCKS : ""
-    SUPPLIERS ||--|{ SUPPLIER_DETAILS : ""
-    ITEMS ||--|{ SUPPLIER_DETAILS : ""
-    SUPPLIERS ||--|{STOCKS : ""
-    STOCKS ||--o{ STOCK_LOGS : "실사 이력 기록"
+    ITEMS ||--o{ STOCKS : ""
+    SUPPLIERS ||--o{ SUPPLIER_DETAILS : ""
+    ITEMS ||--o{ SUPPLIER_DETAILS : ""
+    SUPPLIERS ||--o{STOCKS : ""
+    STOCKS ||..o{ STOCK_LOGS : "실사 이력 기록"
 
     %% [Domain 3: Transaction]
-    PURCHASE_ORDERS ||--|{ PURCHASE_ITEMS : ""
+    PURCHASE_ORDERS ||--o{ PURCHASE_ITEMS : ""
     ITEMS ||--o{ PURCHASE_ITEMS : ""
     SUPPLIERS ||--o{ PURCHASE_ORDERS : ""
     ITEMS {
@@ -51,8 +51,8 @@ erDiagram
     }
 
     SUPPLIER_DETAILS {
-        int supplier_id FK
-        int item_id FK
+        int supplier_id PK, FK
+        int item_id PK, FK
         float conversion_factor
         float safety_stock
         int MOQ
