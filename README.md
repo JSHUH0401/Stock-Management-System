@@ -93,6 +93,7 @@ erDiagram
         int item_id FK
         int recomm_qty
         int actual_qty
+        int price
     }
 ```
 **주요 테이블 설명**
