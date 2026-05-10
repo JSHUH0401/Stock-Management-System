@@ -40,13 +40,13 @@ erDiagram
     SUPPLIERS |o--o{ PURCHASE_ORDERS : ""
     ITEMS {
         int id PK
-        string name
-        string category
+        text name
+        text category
     }
 
     SUPPLIERS {
         int id PK
-        string name
+        text name
         int min_order_price
     }
 
@@ -54,7 +54,7 @@ erDiagram
         int supplier_id PK, FK
         int item_id PK, FK
         float conversion_factor
-        string URL
+        text URL
         float safety_stock
         int MOQ
     }
@@ -83,7 +83,7 @@ erDiagram
     PURCHASE_ORDERS {
         int order_id PK
         int supplier_id FK
-        string status
+        text status
         int total_price
     }
 
