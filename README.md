@@ -28,16 +28,16 @@
 ```mermaid
 erDiagram
     %% [Domain 1: Master Data]
-    ITEMS ||--o{ STOCKS : ""
-    SUPPLIERS ||--o{ ITEM_DETAILS : ""
-    ITEMS ||--o{ ITEM_DETAILS : ""
-    SUPPLIERS ||--o{STOCKS : ""
-    STOCKS ||..o{ STOCK_LOGS : ""
+    ITEMS |o--o{ STOCKS : ""
+    SUPPLIERS |o--o{ ITEM_DETAILS : ""
+    ITEMS |o--o{ ITEM_DETAILS : ""
+    SUPPLIERS |o--o{STOCKS : ""
+    STOCKS |o..o{ STOCK_LOGS : ""
 
     %% [Domain 3: Transaction]
-    PURCHASE_ORDERS ||--o{ PURCHASE_ITEMS : ""
-    ITEMS ||--o{ PURCHASE_ITEMS : ""
-    SUPPLIERS ||--o{ PURCHASE_ORDERS : ""
+    PURCHASE_ORDERS |o--o{ PURCHASE_ITEMS : ""
+    ITEMS |o--o{ PURCHASE_ITEMS : ""
+    SUPPLIERS |o--o{ PURCHASE_ORDERS : ""
     ITEMS {
         int id PK
         string name
