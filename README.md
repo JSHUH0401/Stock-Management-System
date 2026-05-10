@@ -54,6 +54,7 @@ erDiagram
         int supplier_id PK, FK
         int item_id PK, FK
         float conversion_factor
+        string URL
         float safety_stock
         int MOQ
     }
