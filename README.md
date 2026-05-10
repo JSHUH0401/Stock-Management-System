@@ -37,6 +37,7 @@ erDiagram
     %% [Domain 3: Transaction]
     PURCHASE_ORDERS |o--o{ PURCHASE_ITEMS : ""
     ITEMS |o--o{ PURCHASE_ITEMS : ""
+    SUPPLIERS |o--o{ PURCHASE_ITEMS : ""
     SUPPLIERS |o--o{ PURCHASE_ORDERS : ""
     ITEMS {
         int id PK
@@ -53,10 +54,14 @@ erDiagram
     ITEM_DETAILS {
         int supplier_id PK, FK
         int item_id PK, FK
-        float conversion_factor
-        text URL
+        text order_url
+        text order_unit
+        int8 conversion_factor
+        text base_unit
+        bool status
         float safety_stock
-        int MOQ
+        int8 MOQ
+        int8 price
     }
 
     STOCKS {
@@ -91,6 +96,7 @@ erDiagram
         int id PK
         int order_id FK
         int item_id FK
+        int supplier_id FK
         int recomm_qty
         int actual_qty
         int price
